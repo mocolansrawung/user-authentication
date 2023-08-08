@@ -27,7 +27,6 @@ func ProvideUserServiceImpl(userRepository UserRepository, config *configs.Confi
 }
 
 func (s *UserServiceImpl) RegisterUser(registerRequestFormat RegisterRequestFormat) (userRegister UserRegister, err error) {
-	// Get the Request Body
 	userRegister, err = userRegister.NewUserFromRequestFormat(registerRequestFormat)
 	if err != nil {
 		return
@@ -37,7 +36,6 @@ func (s *UserServiceImpl) RegisterUser(registerRequestFormat RegisterRequestForm
 		return userRegister, failure.BadRequest(err)
 	}
 
-	// Insert into the Database
 	err = s.UserRepository.CreateUser(userRegister)
 	if err != nil {
 		return
@@ -48,7 +46,6 @@ func (s *UserServiceImpl) RegisterUser(registerRequestFormat RegisterRequestForm
 		return
 	}
 
-	// Populate the Access Token to the UserRegister
 	userRegister.AccessToken = accessToken
 
 	return

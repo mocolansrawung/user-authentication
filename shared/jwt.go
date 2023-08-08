@@ -14,7 +14,7 @@ import (
 type Claims struct {
 	UserID   uuid.UUID `json:"user_id"`
 	Username string    `json:"username"`
-	Role     string    `json:"role"`
+	Email    string    `json:"email"`
 	jwt.StandardClaims
 }
 
@@ -28,11 +28,11 @@ func ProvideJWTService(secret string) *JWTService {
 	}
 }
 
-func (j *JWTService) GenerateJWT(userID uuid.UUID, username string, role string) (string, error) {
+func (j *JWTService) GenerateJWT(userID uuid.UUID, username string, email string) (string, error) {
 	claims := Claims{
 		UserID:   userID,
 		Username: username,
-		Role:     role,
+		Email:    email,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 1).Unix(),
 			Issuer:    "bootcamp",

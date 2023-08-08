@@ -17,9 +17,10 @@ type UserHandler struct {
 	AuthMiddleware *middleware.Authentication
 }
 
-func ProvideUserHandler(userService user.UserService) UserHandler {
+func ProvideUserHandler(userService user.UserService, authMiddleware *middleware.Authentication) UserHandler {
 	return UserHandler{
-		UserService: userService,
+		UserService:    userService,
+		AuthMiddleware: authMiddleware,
 	}
 }
 
@@ -28,6 +29,13 @@ func (h *UserHandler) Router(r chi.Router) {
 		r.Group(func(r chi.Router) {
 			r.Post("/register", h.RegisterUser)
 			r.Post("/login", h.LoginUser)
+		})
+	})
+
+	r.Route("/", func(r chi.Router) {
+		r.Group(func(r chi.Router) {
+			r.Use(h.AuthMiddleware.ClientCredentialWithJWT)
+			r.Get("/validate", h.ValidateAuth)
 		})
 	})
 }
@@ -78,4 +86,14 @@ func (h *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.WithJSON(w, http.StatusOK, userLogin)
+}
+
+func (h *UserHandler) ValidateAuth(w http.ResponseWriter, r *http.Request) {
+	claims, ok := r.Context().Value("claims").(*shared.Claims)
+	if !ok {
+		response.WithError(w, failure.Unauthorized("Token not authorized"))
+		return
+	}
+
+	response.WithJSON(w, http.StatusOK, claims)
 }

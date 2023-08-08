@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -35,6 +36,7 @@ func (a *Authentication) ClientCredentialWithJWT(next http.Handler) http.Handler
 			response.WithMessage(w, http.StatusUnauthorized, "Unauthorized: No Authorization header")
 			return
 		}
+
 		if !strings.HasPrefix(authHeader, "Bearer ") {
 			response.WithMessage(w, http.StatusUnauthorized, "Unauthorized: Authorization header must start with 'Bearer '")
 			return
@@ -123,6 +125,7 @@ func (a *Authentication) Password(next http.Handler) http.Handler {
 
 // Internal Function
 func (a *Authentication) createClaims(tokenString string) (claims *shared.Claims, err error) {
+	fmt.Println(a.config.App.Secret)
 	jwtService := shared.ProvideJWTService(a.config.App.Secret)
 	claims, err = jwtService.ValidateJWT(tokenString)
 	if err != nil {
