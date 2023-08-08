@@ -1,25 +1,56 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
+	"strings"
 
+	"github.com/evermos/boilerplate-go/configs"
 	"github.com/evermos/boilerplate-go/infras"
+	"github.com/evermos/boilerplate-go/shared"
 	"github.com/evermos/boilerplate-go/shared/oauth"
 	"github.com/evermos/boilerplate-go/transport/http/response"
 )
 
 type Authentication struct {
-	db *infras.MySQLConn
+	db     *infras.MySQLConn
+	config *configs.Config
 }
 
 const (
 	HeaderAuthorization = "Authorization"
 )
 
-func ProvideAuthentication(db *infras.MySQLConn) *Authentication {
+func ProvideAuthentication(db *infras.MySQLConn, config *configs.Config) *Authentication {
 	return &Authentication{
-		db: db,
+		db:     db,
+		config: config,
 	}
+}
+
+func (a *Authentication) ClientCredentialWithJWT(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authHeader := r.Header.Get("Authorization")
+		if authHeader == "" {
+			response.WithMessage(w, http.StatusUnauthorized, "Unauthorized: No Authorization header")
+			return
+		}
+		if !strings.HasPrefix(authHeader, "Bearer ") {
+			response.WithMessage(w, http.StatusUnauthorized, "Unauthorized: Authorization header must start with 'Bearer '")
+			return
+		}
+
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+
+		claims, err := a.createClaims(tokenString)
+		if err != nil {
+			response.WithMessage(w, http.StatusUnauthorized, "Unauthorized: Invalid JWT token")
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), "claims", claims)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }
 
 func (a *Authentication) ClientCredential(next http.Handler) http.Handler {
@@ -88,4 +119,15 @@ func (a *Authentication) Password(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+// Internal Function
+func (a *Authentication) createClaims(tokenString string) (claims *shared.Claims, err error) {
+	jwtService := shared.ProvideJWTService(a.config.App.Secret)
+	claims, err = jwtService.ValidateJWT(tokenString)
+	if err != nil {
+		return
+	}
+
+	return
 }
