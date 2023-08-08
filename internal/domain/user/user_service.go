@@ -1,8 +1,6 @@
 package user
 
 import (
-	"fmt"
-
 	"github.com/evermos/boilerplate-go/configs"
 	"github.com/evermos/boilerplate-go/shared"
 	"github.com/evermos/boilerplate-go/shared/failure"
@@ -67,16 +65,16 @@ func (s *UserServiceImpl) Login(loginRequestFormat LoginRequestFormat) (userLogi
 	}
 
 	userLogin, err = s.UserRepository.ResolveLoginByUsername(loginRequest.Username)
-	fmt.Println(userLogin)
 	if err != nil {
-
-		return
+		userLogin, err = s.UserRepository.ResolveLoginByEmail(loginRequest.Email)
+		if err != nil {
+			return userLogin, failure.BadRequest(err)
+		}
 	}
 
 	isValidPassword := checkPasswordHash(loginRequest.Password, userLogin.Password)
 	if !isValidPassword {
-
-		return
+		return userLogin, failure.BadRequest(err)
 	}
 
 	accessToken, err := s.createToken(userLogin.ID, userLogin.Username, userLogin.Email)
