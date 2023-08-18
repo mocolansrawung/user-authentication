@@ -25,7 +25,7 @@ func ProvideUserHandler(userService user.UserService, authMiddleware *middleware
 }
 
 func (h *UserHandler) Router(r chi.Router) {
-	r.Route("/auth", func(r chi.Router) {
+	r.Route("/users", func(r chi.Router) {
 		r.Group(func(r chi.Router) {
 			r.Post("/register", h.RegisterUser)
 			r.Post("/login", h.LoginUser)
@@ -44,9 +44,9 @@ func (h *UserHandler) Router(r chi.Router) {
 // @Summary Register a new user.
 // @Description This endpoint registers a new user and returns user details.
 // @Tags user
-// @Param user body RegisterRequestFormat true "The user registration details."
+// @Param user body user.RegisterRequestFormat true "The user registration details."
 // @Produce json
-// @Success 201 {object} response.Base{data=UserResponseFormat}
+// @Success 201 {object} response.Base{data=user.UserResponseFormat}
 // @Failure 400 {object} response.Base
 // @Failure 500 {object} response.Base
 // @Router /v1/auth/register [post]
@@ -78,9 +78,9 @@ func (h *UserHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 // @Summary Login a user.
 // @Description This endpoint logs in a user and returns an authentication token.
 // @Tags user
-// @Param user body LoginRequestFormat true "The user login details."
+// @Param user body user.LoginRequestFormat true "The user login details."
 // @Produce json
-// @Success 200 {object} response.Base{data=LoginResponseFormat}
+// @Success 200 {object} response.Base{data=user.LoginResponseFormat}
 // @Failure 400 {object} response.Base
 // @Failure 401 {object} response.Base
 // @Failure 500 {object} response.Base
@@ -115,7 +115,7 @@ func (h *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 // @Tags user
 // @Security EVMOauthToken
 // @Produce json
-// @Success 200 {object} response.Base{data=Claims}
+// @Success 200 {object} response.Base{data=shared.Claims}
 // @Failure 401 {object} response.Base
 // @Failure 500 {object} response.Base
 // @Router /v1/validate [get]
