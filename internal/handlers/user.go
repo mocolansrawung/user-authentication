@@ -40,6 +40,16 @@ func (h *UserHandler) Router(r chi.Router) {
 	})
 }
 
+// RegisterUser registers a new user.
+// @Summary Register a new user.
+// @Description This endpoint registers a new user and returns user details.
+// @Tags user
+// @Param user body RegisterRequestFormat true "The user registration details."
+// @Produce json
+// @Success 201 {object} response.Base{data=UserResponseFormat}
+// @Failure 400 {object} response.Base
+// @Failure 500 {object} response.Base
+// @Router /v1/auth/register [post]
 func (h *UserHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	var registerRequestFormat user.RegisterRequestFormat
@@ -64,6 +74,17 @@ func (h *UserHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	response.WithJSON(w, http.StatusCreated, userRegister)
 }
 
+// LoginUser logs in a user and returns authentication token.
+// @Summary Login a user.
+// @Description This endpoint logs in a user and returns an authentication token.
+// @Tags user
+// @Param user body LoginRequestFormat true "The user login details."
+// @Produce json
+// @Success 200 {object} response.Base{data=LoginResponseFormat}
+// @Failure 400 {object} response.Base
+// @Failure 401 {object} response.Base
+// @Failure 500 {object} response.Base
+// @Router /v1/auth/login [post]
 func (h *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	var loginRequestFormat user.LoginRequestFormat
@@ -88,6 +109,16 @@ func (h *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	response.WithJSON(w, http.StatusOK, userLogin)
 }
 
+// ValidateAuth validates the user's authentication token.
+// @Summary Validate user authentication token.
+// @Description This endpoint validates the user's authentication token and returns user claims.
+// @Tags user
+// @Security EVMOauthToken
+// @Produce json
+// @Success 200 {object} response.Base{data=Claims}
+// @Failure 401 {object} response.Base
+// @Failure 500 {object} response.Base
+// @Router /v1/validate [get]
 func (h *UserHandler) ValidateAuth(w http.ResponseWriter, r *http.Request) {
 	claims, ok := r.Context().Value("claims").(*shared.Claims)
 	if !ok {

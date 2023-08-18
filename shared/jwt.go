@@ -35,7 +35,7 @@ func (j *JWTService) GenerateJWT(userID uuid.UUID, username string, email string
 		Email:    email,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 1).Unix(),
-			Issuer:    "bootcamp",
+			Issuer:    "EverShop",
 		},
 	}
 
